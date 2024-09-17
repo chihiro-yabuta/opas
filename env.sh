@@ -9,4 +9,7 @@ if [ ! -e '.env' ]; then
   else
     echo "git_email=${email}\ngit_name=${name}" > .env
   fi
+
+  read -p "browserless token: " token
+  echo "token=${token}" >> .env
 fi
