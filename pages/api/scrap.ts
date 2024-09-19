@@ -25,10 +25,10 @@ export async function scrap(reqRegion: string, reqGenre: string) {
 
   await click(page, genres[genreIdx], `genre: ${genreNames[genreIdx]}`);
 
-  for (let i = 0; i < (await page.$$('[onmouseover]')).length; i++) {
+  for (let subGenreIdx = 0; subGenreIdx < (await page.$$('[onmouseover]')).length; subGenreIdx++) {
     const subGenres = await page.$$('[onmouseover]');
-    const subGenreName = await name(subGenres[i]);
-    await click(page, subGenres[i], `subGenre: ${subGenreName}`);
+    const subGenreName = await name(subGenres[subGenreIdx]);
+    await click(page, subGenres[subGenreIdx], `subGenre: ${subGenreName}`);
 
     const select = await page.$('.btncenter > a');
     await click(page, select, 'select');
@@ -36,13 +36,12 @@ export async function scrap(reqRegion: string, reqGenre: string) {
     const next = (await page.$$('#pagerbox > a'))[1];
     await click(page, next, 'next');
 
-    let weekCnt = 0;
-    while (1) {
-      if (weekCnt === 2) { //solve
-        break;
-      }
+    const year = await lastOpt(await page.$('#optYear'));
+    const month = await lastOpt(await page.$('#optMonth'));
+
+    for (let weekIdx = 0; weekIdx < getWeekNumber(year, month); weekIdx++) {
       const day = (await page.$$('th > .day')).slice(0, 7);
-      const week = await Promise.all(day.map(async e => await name(e)));
+      const week = await Promise.all(day.map(async d => await name(d)));
 
       for (const tbl of await page.$$('#facilitiesbox > tbody > tr > td')) {
         const org = await name(await tbl.$('.clearfix.kaikan_title'));
@@ -57,10 +56,10 @@ export async function scrap(reqRegion: string, reqGenre: string) {
           return subOrg;
         });
 
-        const data = await Promise.all((await tbl.$$('tr')).map(async (row, n) => (
-          await Promise.all((await row.$$('td img')).map(async (img, i) => {
+        const data = await Promise.all((await tbl.$$('tr')).map(async (row, rowIdx) => (
+          await Promise.all((await row.$$('td img')).map(async (img, imgIdx) => {
             if ((await img.evaluate(e => e.getAttribute('src'))).includes('maru')) {
-              return [subOrgs[n], `${week[i]} | ${await name(await row.$('.facmdstime'))}`];
+              return [subOrgs[rowIdx], `${week[imgIdx]} | ${await name(await row.$('.facmdstime'))}`];
             }
           }))
         )));
@@ -82,8 +81,7 @@ export async function scrap(reqRegion: string, reqGenre: string) {
       }
 
       const nextWeek = (await page.$$('.wmmove > a'))[1];
-      await click(page, nextWeek, `nextWeek ${weekCnt}`);
-      weekCnt++;
+      await click(page, nextWeek, `nextWeek ${weekIdx}`);
     }
   }
 
@@ -106,6 +104,17 @@ async function imgName(element: ElementHandle) {
 
 async function tdName(element: ElementHandle) {
   return await element.evaluate(e => e.querySelector('td').textContent.trim());
+}
+
+async function lastOpt(element: ElementHandle) {
+  const opts = await element.$$('option');
+  return await opts[opts.length - 1].evaluate(e => e.getAttribute('value'));
+}
+
+function getWeekNumber(year: string, month: string) {
+  const curr = new Date().getTime();
+  const last = new Date(Number(year), Number(month), 0).getTime();
+  return Math.ceil((Math.floor((last - curr) / (1000 * 60 * 60 * 24))) / 7);
 }
 
 interface Response {
