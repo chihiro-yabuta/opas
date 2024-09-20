@@ -12,4 +12,13 @@ if [ ! -e '.env' ]; then
 
   read -p "browserless token: " token
   echo "token=${token}" >> .env
+
+  read -p "redis host(empty -> localhost): " host
+  if [ -z $host ]; then
+    host='localhost:6379'
+  else
+    read -p "redis password: " pswd
+    echo "pswd=${pswd}" >> .env
+  fi
+  echo "host=${host}" >> .env
 fi
