@@ -1,105 +1,125 @@
+import { appendFile } from 'fs/promises';
 import { RedisClientType } from 'redis';
-import { connect, Page, ElementHandle } from 'puppeteer-core';
+import { Page, ElementHandle, connect } from 'puppeteer-core';
 
-export async function scrap(cli: RedisClientType, reqRegion: string, reqGenre: string) {
-  const key = `opas?region=${reqRegion}&genre=${reqGenre}`;
-  await cli.set(key, JSON.stringify({ log: 'start' }));
+export async function scrap(res: Response, cli: RedisClientType, reqRegion: string, reqGenre: string, tgtSubgenre: number, tgtWeek: number) {
+  let reqTgtSubgenre = 0;
+  let reqTgtWeek = 0;
+  const resObj = res;
+  const logObj = (l: string): Log => { return { region: reqRegion, genre: reqGenre, log: l } };
+
+  const browser = await connect({ browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.token}` });
+  const page = await browser.newPage();
 
   try {
-    const resObj: Response = {};
-    const browser = await connect({
-      browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.token}`,
-    });
-    const page = await browser.newPage();
     await page.goto('https://reserve.opas.jp/portal/menu/DantaiSelect.cgi?action=ReNew');
-
     const regions = await page.$$('td');
     const regionNames = await Promise.all(regions.map(async g => await imgName(g)));
     const regionIdx = regionNames.indexOf(reqRegion);
-    await click(cli, key, page, regions[regionIdx], `region: ${regionNames[regionIdx]}`);
+    let msg = await click(page, regions[regionIdx], logObj(reqRegion));
 
     const vacant = await (await page.$('.btnbox')).$('a');
-    await click(cli, key, page, vacant, 'vacant');
+    msg = await click(page, vacant, logObj(`${msg}->vacant`));
     const purpose = await page.$('[onmouseover]');
-    await click(cli, key, page, purpose, 'purpose');
+    msg = await click(page, purpose, logObj(`${msg}->purpose`));
 
     const genres = await page.$$('[onmouseover]');
     const genreNames = await Promise.all(genres.map(async g => await tdName(g)));
     const genreIdx = genreNames.indexOf(reqGenre);
-    await click(cli, key, page, genres[genreIdx], `genre: ${genreNames[genreIdx]}`);
+    msg = await click(page, genres[genreIdx], logObj(`${msg}->${genreNames[genreIdx]}`));
 
-    for (let subGenreIdx = 0; subGenreIdx < (await page.$$('[onmouseover]')).length; subGenreIdx++) {
+    for (let subGenreIdx = tgtSubgenre; subGenreIdx < (await page.$$('[onmouseover]')).length; subGenreIdx++) {
+      reqTgtSubgenre = subGenreIdx;
       const subGenres = await page.$$('[onmouseover]');
       const subGenreName = await name(subGenres[subGenreIdx]);
-      await click(cli, key, page, subGenres[subGenreIdx], `subGenre: ${subGenreName}`);
+      let m = await click(page, subGenres[subGenreIdx], logObj(`${msg}->${subGenreName}`));
 
       const select = await page.$('.btncenter > a');
-      await click(cli, key, page, select, 'select');
+      m = await click(page, select, logObj(`${m}->select`));
 
       const next = (await page.$$('#pagerbox > a'))[1];
-      await click(cli, key, page, next, 'next');
+      m = await click(page, next, logObj(`${m}->next`));
 
-      const year = await lastOpt(await page.$('#optYear'));
-      const month = await lastOpt(await page.$('#optMonth'));
+      let compareDate = '';
+      let weekIdx = 0;
+      while (1) {
+        reqTgtWeek = weekIdx;
+        const tbls = await page.$$('#facilitiesbox > tbody > tr > td');
+        const firstRowDate = await name((await tbls[0].$$('table > tbody > tr > th'))[1]);
+        if (firstRowDate === compareDate) { break; }
+        compareDate = firstRowDate;
 
-      for (let weekIdx = 0; weekIdx < getWeekNumber(year, month); weekIdx++) {
+        if (weekIdx < tgtWeek) {
+          const nextWeek = (await page.$$('.wmmove > a'))[1];
+          await click(page, nextWeek, logObj(`${m}->skipWeek(${weekIdx})`));
+          weekIdx++;
+          continue;
+        }
+
         const day = (await page.$$('th > .day')).slice(0, 7);
         const week = await Promise.all(day.map(async d => await name(d)));
+        const year = await name(await selected(await (await page.$('#optYear')).$$('option')));
 
-        for (const tbl of await page.$$('#facilitiesbox > tbody > tr > td')) {
+        await Promise.all(tbls.map(async (tbl) => {
+          let subOrg: string = null;
+          const data: string[][][] = [];
           const org = await name(await tbl.$('.clearfix.kaikan_title'));
-          let subOrgs = await Promise.all((await tbl.$$('tr')).map(async (row) => {
-            const subOrg = await row.$('.shisetu_name > .clearfix');
-            return subOrg && await name(subOrg);
-          }));
 
-          let subOrg = null;
-          subOrgs = subOrgs.map((s) => {
-            subOrg = s || subOrg;
-            return subOrg;
-          });
+          for (const row of await tbl.$$('tr')) {
+            const s = await row.$('.shisetu_name > .clearfix');
 
-          const data = await Promise.all((await tbl.$$('tr')).map(async (row, rowIdx) => (
-            await Promise.all((await row.$$('td img')).map(async (img, imgIdx) => {
-              if ((await img.evaluate(e => e.getAttribute('src'))).includes('maru')) {
-                return [subOrgs[rowIdx], `${week[imgIdx]} | ${await name(await row.$('.facmdstime'))}`];
-              }
-            }))
-          )));
+            subOrg = (s && await name(s)) || subOrg;
+            const t = await row.$('.facmdstime');
+            const time = t && await name(t);
+            t && await log(logObj(`${reqRegion} ${weekIdx} ${org} ${subOrg} ${time}`));
+
+            data.push(await Promise.all((await row.$$('td img')).map(async (img, imgIdx) => {
+              const maruFlg = (await img.evaluate(e => e.getAttribute('src'))).includes('maru');
+              return maruFlg && [subOrg, `${year}年${week[imgIdx]} | ${time}`];
+            })));
+          }
 
           data.map(d => (d.map((e) => {
             if (e) {
-              if (!resObj[org]) {
-                resObj[org] = {};
-              }
-              if (!resObj[org][e[0]]) {
-                resObj[org][e[0]] = {};
-              }
-              if (!resObj[org][e[0]][subGenreName]) {
-                resObj[org][e[0]][subGenreName] = [];
-              }
+              resObj[org] ||= {};
+              resObj[org][e[0]] ||= {};
+              resObj[org][e[0]][subGenreName] ||= [];
               resObj[org][e[0]][subGenreName].push(e[1]);
             }
           })));
-        }
+        }));
 
         const nextWeek = (await page.$$('.wmmove > a'))[1];
-        await click(cli, key, page, nextWeek, `nextWeek ${weekIdx}`);
+        await click(page, nextWeek, logObj(`${m}->nextWeek(${weekIdx+1})`));
+        weekIdx++;
       }
+
+      const undoCalendar = await page.$('#pagerbox > a');
+      await click(page, undoCalendar, logObj(`${m}->undoCalendar`));
+      const undoSubOrg = await page.$('#pagerbox > a');
+      await click(page, undoSubOrg, logObj(`${msg}->${subGenreName}->undoSubOrg`));
     }
 
-    await cli.set(key, JSON.stringify(resObj));
-  } catch (error) {
-    console.log(error);
-    await cli.del(key);
+    await browser.close();
+    await cli.set(`opas?region=${reqRegion}&genre=${reqGenre}`, JSON.stringify(resObj));
+    await log(logObj(`done: ${reqRegion} ${reqGenre}`));
+  } catch {
+    await browser.close();
+    console.log(`error ${reqRegion} ${reqGenre}: next starts from subgenre${reqTgtSubgenre}, week${reqTgtWeek}`);
+    await scrap(resObj, cli, reqRegion, reqGenre, reqTgtSubgenre, reqTgtWeek);
   }
 }
 
-async function click(cli: RedisClientType, key: string, page: Page, element: ElementHandle, title: string) {
+async function log(logObj: Log) {
+  process.env.test && await appendFile(`log/${logObj.region}${logObj.genre}.log`, logObj.log + '\n');
+  console.log(logObj.log);
+}
+
+async function click(page: Page, element: ElementHandle, logObj: Log) {
   await element.click();
   await page.waitForNavigation({ waitUntil: 'networkidle0' });
-  await cli.set(key, JSON.stringify({ log: title }));
-  console.log(title);
+  await log(logObj);
+  return logObj.log;
 }
 
 async function name(element: ElementHandle) {
@@ -114,15 +134,8 @@ async function tdName(element: ElementHandle) {
   return await element.evaluate(e => e.querySelector('td').textContent.trim());
 }
 
-async function lastOpt(element: ElementHandle) {
-  const opts = await element.$$('option');
-  return await opts[opts.length - 1].evaluate(e => e.getAttribute('value'));
-}
-
-function getWeekNumber(year: string, month: string) {
-  const curr = new Date().getTime();
-  const last = new Date(Number(year), Number(month), 0).getTime();
-  return Math.ceil((Math.floor((last - curr) / (1000 * 60 * 60 * 24))) / 7);
+async function selected(elements: ElementHandle[]) {
+  return (await Promise.all(elements.filter(async e => await e.evaluate(el => el.getAttribute('selected')))))[0];
 }
 
 interface Response {
@@ -131,4 +144,10 @@ interface Response {
       [subGenre: string]: string[];
     };
   };
+}
+
+interface Log {
+  region: string;
+  genre: string;
+  log: string;
 }
