@@ -1,13 +1,21 @@
 import { appendFile } from 'fs/promises';
 import { RedisClientType } from 'redis';
-import { Page, Browser, ElementHandle, connect } from 'puppeteer-core';
+import { Page, Browser, ElementHandle, launch } from 'puppeteer-core';
 
-export async function scrap(cli: RedisClientType, reqRegion: string, reqGenre: string) {
+export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: string) {
+  let browserInit: Browser;
+  let pageInit: Page;
   let resObj: Response = {};
   const logObj = (l: string): Log => { return { region: reqRegion, genre: reqGenre, log: l } };
 
-  const browserInit = await connect({ browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.token}` });
-  const pageInit = await browserInit.newPage();
+  try {
+    browserInit = await launch(args);
+    pageInit = await browserInit.newPage();
+  } catch (error) {
+    await cli.set(`opas?region=${reqRegion}&genre=${reqGenre}`, JSON.stringify({ error: error.message }));
+    await log(logObj(error.message));
+    return;
+  }
 
   const init = async (page: Page) => {
     await page.goto('https://reserve.opas.jp/portal/menu/DantaiSelect.cgi?action=ReNew');
@@ -55,7 +63,7 @@ export async function scrap(cli: RedisClientType, reqRegion: string, reqGenre: s
         pageSubGenre = pageInit;
         m = msg;
       } else {
-        browserSubGenre = await connect({ browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.token}` });
+        browserSubGenre = await launch(args);
         pageSubGenre = await browserSubGenre.newPage();
         m = await init(pageSubGenre);
       }
@@ -138,13 +146,14 @@ export async function scrap(cli: RedisClientType, reqRegion: string, reqGenre: s
     await log(logObj(`done: ${reqRegion}/${reqGenre}`));
   } catch (error) {
     await browserInit.close();
+    await cli.set(`opas?region=${reqRegion}&genre=${reqGenre}`, JSON.stringify({ error: error.message }));
     await log(logObj(error.message));
-    await scrap(cli, reqRegion, reqGenre);
+    return;
   }
 }
 
 async function log(logObj: Log) {
-  process.env.test && await appendFile(`log/${logObj.region}${logObj.genre}.log`, logObj.log + '\n');
+  !process.env.VERCEL && await appendFile(`log/${logObj.region}${logObj.genre}.log`, logObj.log + '\n');
   console.log(logObj.log);
 }
 
@@ -167,4 +176,12 @@ interface Log {
   region: string;
   genre: string;
   log: string;
+}
+
+const args = {
+  executablePath: '/usr/bin/chromium',
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+  ],
 }

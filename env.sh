@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 email=`git config user.email`
 name=`git config user.name`
@@ -9,9 +9,6 @@ if [ ! -e '.env' ]; then
   else
     echo "git_email=${email}\ngit_name=${name}" > .env
   fi
-
-  read -p "browserless token: " token
-  echo "token=${token}" >> .env
 
   read -p "redis host(empty -> localhost): " host
   if [ -z $host ]; then
