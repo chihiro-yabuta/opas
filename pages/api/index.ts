@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     process.env.test && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
     await cli.set(`opas?region=${reqRegion}&genre=${reqGenre}`, JSON.stringify({ log: 'start' }));
 
-    scrap({}, cli, reqRegion, reqGenre, 0, 0);
+    scrap(cli, reqRegion, reqGenre);
     return res.status(200).json({ log: 'start' });
   }
   return res.status(200).json(resObj);
