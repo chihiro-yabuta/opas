@@ -20,14 +20,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await cli.connect();
   }
 
-  let resObj = JSON.parse(await cli.get(`opas?region=${reqRegion}&genre=${reqGenre}`));
-  if (!resObj || (updt && !resObj.log)) {
-    !process.env.VERCEL && await mkdir('log', { recursive: true });
-    !process.env.VERCEL && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
-    await cli.set(`opas?region=${reqRegion}&genre=${reqGenre}`, JSON.stringify({ log: 'start' }));
+  const key = `opas?region=${reqRegion}&genre=${reqGenre}`;
+  const cond = JSON.parse(await cli.get('opas'));
+  const resObj = JSON.parse(await cli.get(key));
 
-    scrape(cli, reqRegion, reqGenre);
-    return res.status(200).json({ log: 'start' });
+  if (cond?.status === 'in-progress') {
+    return res.status(200).json(resObj ? resObj : cond);
+  } else {
+    if (!resObj || updt) {
+      await cli.set('opas', JSON.stringify({ status: 'in-progress', key: key }));
+
+      !process.env.VERCEL && await mkdir('log', { recursive: true });
+      !process.env.VERCEL && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
+
+      scrape(cli, reqRegion, reqGenre);
+      return res.status(200).json({ status: 'in-progress', key: key });
+    } else {
+      return res.status(200).json(resObj);
+    }
   }
-  return res.status(200).json(resObj);
 }
