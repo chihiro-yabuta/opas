@@ -22,8 +22,8 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
           r.pipe(writableStream);
           r.on('end', resolve);
           r.on('error', reject);
-        })
-      ));
+        }).on('error', reject)
+      ).on('error', reject));
 
       const zip = new AdmZip('/tmp/chromium.zip');
       zip.extractAllTo('/tmp', true);
