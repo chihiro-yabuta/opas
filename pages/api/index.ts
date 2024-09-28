@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       zip.extractAllTo('tmp', true);
     }
   } catch (error) {
-    return res.status(404).json(error);
+    return res.status(200).json(error);
   }
 
   const { searchParams } = new URL(req.url as string, `http://${req.headers.host}`);
