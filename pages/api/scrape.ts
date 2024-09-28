@@ -1,6 +1,11 @@
+import fs from 'fs';
 import { appendFile } from 'fs/promises';
 import { RedisClientType } from 'redis';
+import https from 'https';
+import AdmZip from 'adm-zip';
 import { Page, Browser, ElementHandle, launch } from 'puppeteer-core';
+
+const url = 'https://download-chromium.appspot.com/dl/Linux?type=snapshots';
 
 export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: string) {
   let browserInit: Browser;
@@ -8,6 +13,27 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
   let resObj: Response = {};
   const key = `opas?region=${reqRegion}&genre=${reqGenre}`;
   const logObj = (l: string): Log => { return { region: reqRegion, genre: reqGenre, log: l } };
+
+  try {
+    if (!fs.existsSync('/tmp/chromium.zip')) {
+      await new Promise((resolve, reject) => https.get(url,
+        (res) => https.get(res.headers.location, (r) => {
+          const writableStream = fs.createWriteStream('/tmp/chromium.zip');
+          r.pipe(writableStream);
+          r.on('end', resolve);
+          r.on('error', reject);
+        })
+      ));
+
+      const zip = new AdmZip('/tmp/chromium.zip');
+      zip.extractAllTo('/tmp', true);
+    }
+  } catch (error) {
+    await cli.set('opas', JSON.stringify({ status: 'error', key: key }));
+    await cli.set(key, JSON.stringify({ status: 'dl error', msg: error.message }));
+    await log(logObj(`dl error: ${error.message}`));
+    return;
+  }
 
   try {
     browserInit = await launch(args);
