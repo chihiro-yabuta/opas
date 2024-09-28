@@ -183,7 +183,7 @@ interface Log {
 }
 
 const args = {
-  executablePath: '/usr/bin/chromium',
+  executablePath: process.env.VERCEL ? '/tmp/chrome-linux/chrome' : '/usr/bin/chromium',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
