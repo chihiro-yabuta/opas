@@ -13,10 +13,17 @@ function App() {
 
   const fetchData = (updt?: boolean) => {
     if (regions[region].includes(genre)) {
-      const f = updt ? '&updt=true' : '';
-      const key = `/api?region=${region}&genre=${genre}${f}`;
-      fetch(key).then((res) => res.json()).then((data) => {
-        setData((prevData) => { return { ...prevData, [region]: data } });
+      const key = `/api?region=${region}&genre=${genre}${updt ? '&updt=true' : ''}`;
+      fetch(key).then((res) => res.json()).then((res) => {
+        setData((prevData) => { return { ...prevData, [region]: res } });
+        const id = res.status === 'in-progress' && setInterval(() => {
+          fetch(key).then((res) => res.json()).then((res) => {
+            if (res.status !== 'in-progress') {
+              setData((prevData) => { return { ...prevData, [region]: res } });
+              clearInterval(id);
+            }
+          });
+        }, 3000);
       });
     } else {
       setData((prevData) => { return { ...prevData, [region]: 'not found' } });
