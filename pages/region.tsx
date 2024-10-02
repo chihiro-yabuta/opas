@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Provider, useDispatch } from 'react-redux';
+import { store, slice } from '../store';
+import { initData } from  '../store/data';
 
-export default function Region() {
+export function Region() {
+  const regions = Object.keys(initData);
+  const dispatch = useDispatch();
   const [region, setRegion] = useState(regions[0]);
+
+  useEffect(() => { dispatch(slice.actions.sendRegion(region)); }, [region]);
 
   return <div
     style={{ display: 'flex', justifyContent: 'center' }}
@@ -22,23 +29,8 @@ export default function Region() {
   </div>
 }
 
-const regions = [
-  '大阪府',
-  '豊中市',
-  '茨木市',
-  '堺市',
-  '高石市',
-  '大阪狭山市',
-  '熊取町',
-  '池田市',
-  '東大阪市',
-  '吹田市',
-  '和泉市',
-  '高槻市',
-  '河内長野市',
-  '大阪市',
-  '富田林市',
-  '河南町',
-  '太子町',
-  '千早赤阪村',
-];
+export default function Index() {
+  return <Provider store={store}>
+    <Region />
+  </Provider>
+}

@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Provider, useDispatch } from 'react-redux';
+import { store, slice } from '../store';
+import { genres } from  '../store/data';
 
-export default function Genre() {
+export function Genre() {
+  const dispatch = useDispatch();
   const ref = useRef(null);
   const [genre, setGenre] = useState(genres[0][0]);
   const [isVisible, setIsVisible] = useState(false);
@@ -9,6 +13,8 @@ export default function Genre() {
   useEffect(() => {
     document.addEventListener('click', e => !ref.current.contains(e.target) && setIsVisible(false));
   }, []);
+
+  useEffect(() => { dispatch(slice.actions.sendGenre(genre)); }, [genre]);
 
   return <>
     <motion.div
@@ -46,35 +52,8 @@ export default function Genre() {
   </>
 }
 
-const genres = [
-  [
-    'バレーボール',
-    'バスケットボール',
-    'バドミントン',
-  ],
-  [
-    '卓球',
-    'テニス',
-    '体操',
-  ],
-  [
-    'ダンス・エクササイズ',
-    '武道',
-    '野球・ソフトボール',
-  ],
-  [
-    'サッカー',
-    'ニュースポーツ',
-    '陸上・跳躍・投擲',
-  ],
-  [
-    '競技会・運動会',
-    '文化利用・会議（スポーツ）',
-    'レクリエーション',
-  ],
-  [
-    'その他球技',
-    'その他スポーツ',
-    'その他',
-  ],
-];
+export default function Index() {
+  return <Provider store={store}>
+    <Genre />
+  </Provider>
+}
