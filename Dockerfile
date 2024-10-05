@@ -1,7 +1,6 @@
 FROM node
 
 RUN apt-get update && apt install -y chromium
-RUN npm i -g vercel
 
 RUN mkdir /opas-pv
 COPY --from=redis /usr/local/bin /usr/local/redis

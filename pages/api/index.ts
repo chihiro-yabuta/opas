@@ -10,9 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const updt = searchParams.get('updt');
   const reqRegion = searchParams.get('region');
   const reqGenre = searchParams.get('genre');
+  const prod = process.env.NODE_ENV === 'production';
 
   if (!cli) {
-    cli = createClient(process.env.VERCEL && {
+    cli = createClient(prod && {
       url: 'rediss://' + process.env.host,
       password: process.env.pswd,
       socket: { tls: true, minVersion: 'TLSv1.2' }
@@ -30,8 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!resObj || updt) {
       await cli.set('opas', JSON.stringify({ status: 'in-progress', key: key }));
 
-      !process.env.VERCEL && await mkdir('log', { recursive: true });
-      !process.env.VERCEL && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
+      !prod && await mkdir('log', { recursive: true });
+      !prod && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
 
       scrape(cli, reqRegion, reqGenre);
       return res.status(200).json({ status: 'in-progress', key: key });
