@@ -146,10 +146,10 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
 
             data.map(d => (d.map((e) => {
               if (e) {
-                obj[org] ||= {};
-                obj[org][e[0]] ||= {};
-                obj[org][e[0]][subGenreName] ||= [];
-                obj[org][e[0]][subGenreName].push(e[1]);
+                obj[subGenreName] ||= {};
+                obj[subGenreName][org] ||= {};
+                obj[subGenreName][org][e[0]] ||= [];
+                obj[subGenreName][org][e[0]].push(e[1]);
               }
             })));
           });
@@ -198,9 +198,9 @@ async function click(page: Page, element: ElementHandle, logObj: Log) {
 }
 
 interface Response {
-  [org: string]: {
-    [subOrg: string]: {
-      [subGenre: string]: string[];
+  [subGenre: string]: {
+    [org: string]: {
+      [subOrg: string]: string[];
     };
   };
 }

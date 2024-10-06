@@ -11,22 +11,20 @@ export function Region() {
 
   useEffect(() => { dispatch(slice.actions.sendRegion(region)); }, [region]);
 
-  return <div
-    style={{ display: 'flex', justifyContent: 'center' }}
-  >
-    {regions.map((r, i) => <motion.div
+  return <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><tr>
+    {regions.map((r, i) => <motion.td
       key={i}
       initial={{ backgroundColor: '#ffffff' }}
       whileHover={{ backgroundColor: `${region === r ? '#84a2d4' : '#e0ffff'}` }}
       animate={{ backgroundColor: `${region === r ? '#84a2d4' : '#ffffff'}` }}
       style={{
-        display: 'grid', writingMode: 'vertical-rl', placeItems: 'center',
-        boxShadow: '0 0 0 2px #84a2d4', width: '5%', fontSize: '2vw', padding: '20px 0',
+        writingMode: 'vertical-rl', textAlign: 'center',
+        border: 'solid 2px #84a2d4', fontSize: '2vw', padding: '20px 0',
       }}
       onClick={() => setRegion(r)}
       children={r}
     />)}
-  </div>
+  </tr></tbody></table>
 }
 
 export default function Index() {

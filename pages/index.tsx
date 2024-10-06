@@ -26,7 +26,8 @@ function App() {
         }, 3000);
       });
     } else {
-      setData((prevData) => { return { ...prevData, [region]: 'not found' } });
+      const key = `opas?region=${region}&genre=${genre}`;
+      setData((prevData) => { return { ...prevData, [region]: { status: 'skip', key: key } } });
     }
   }
 
