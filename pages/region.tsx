@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Provider, useDispatch } from 'react-redux';
 import { store, slice } from '../store';
-import { initData } from  '../store/data';
+import { initData, color } from  '../store/data';
 
 export function Region() {
   const regions = Object.keys(initData);
@@ -18,7 +18,7 @@ export function Region() {
       whileHover={{ backgroundColor: `${region === r ? '#84a2d4' : '#e0ffff'}` }}
       animate={{ backgroundColor: `${region === r ? '#84a2d4' : '#ffffff'}` }}
       style={{
-        writingMode: 'vertical-rl', textAlign: 'center',
+        writingMode: 'vertical-rl', textAlign: 'center', color: color[i],
         border: 'solid 2px #84a2d4', fontSize: '2vw', padding: '20px 0',
       }}
       onClick={() => setRegion(r)}

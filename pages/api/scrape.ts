@@ -32,8 +32,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
       zip.extractAllTo('/', true);
     }
   } catch (error) {
-    await cli.set('opas', JSON.stringify({ status: 'error', key: key }));
-    await cli.set(key, JSON.stringify({ status: 'dl error', msg: error.message }));
+    await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`dl error: ${error.message}`));
     return;
   }
@@ -42,8 +41,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
     browserInit = await launch(args);
     pageInit = await browserInit.newPage();
   } catch (error) {
-    await cli.set('opas', JSON.stringify({ status: 'error', key: key }));
-    await cli.set(key, JSON.stringify({ status: 'init error', msg: error.message }));
+    await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`init error: ${error.message}`));
     return;
   }
@@ -173,13 +171,12 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
       await (browserSubGenre || browserInit).close();
     }));
 
-    await cli.set('opas', JSON.stringify({ status: 'success', key: key }));
+    await cli.set('opas', JSON.stringify({ status: 'success', key: key, msg: 'done' }));
     await cli.set(key, JSON.stringify(resObj));
     await log(logObj(`done: ${reqRegion}/${reqGenre}`));
   } catch (error) {
     await browserInit.close();
-    await cli.set('opas', JSON.stringify({ status: 'error', key: key }));
-    await cli.set(key, JSON.stringify({ status: 'main error', msg: error.message }));
+    await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`main error: ${error.message}`));
     return;
   }

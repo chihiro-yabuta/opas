@@ -26,18 +26,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const resObj = JSON.parse(await cli.get(key));
 
   if (cond?.status === 'in-progress') {
-    return res.status(200).json(resObj ? resObj : cond);
+    if (resObj) {
+      return res.status(200).json(resObj);
+    } else {
+      const time = new Date().getTime();
+      if (Number(cond.msg) - time < 180000) {
+        return res.status(200).json(cond);
+      } else {
+        await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));
+        return res.status(200).json({ status: 'error', key: key, msg: 'stuck' });
+      }
+    }
   } else {
-    if (!resObj || updt) {
-      await cli.set('opas', JSON.stringify({ status: 'in-progress', key: key }));
+    if (updt) {
+      const time = new Date().getTime().toString();
+      await cli.set('opas', JSON.stringify({ status: 'in-progress', key: key, msg: time }));
 
       !prod && await mkdir('log', { recursive: true });
       !prod && await writeFile(`log/${reqRegion}${reqGenre}.log`, '');
 
       scrape(cli, reqRegion, reqGenre);
-      return res.status(200).json({ status: 'in-progress', key: key });
+      return res.status(200).json({ status: 'in-progress', key: key, msg: time });
     } else {
-      return res.status(200).json(resObj);
+      return res.status(200).json(resObj || { status: 'skip', key: key, msg: 'not yet' });
     }
   }
 }
