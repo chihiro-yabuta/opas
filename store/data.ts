@@ -1,4 +1,22 @@
-export const initData = {
+export interface Response {
+  [region: string]: {
+    [subGenre: string]: {
+      [org: string]: {
+        [subOrg: string]: string[];
+      }
+    }
+  }
+}
+
+export interface Status {
+  [region: string]: {
+    status: 'in-progress' | 'skip' | 'error';
+    key: string;
+    msg: string;
+  }
+}
+
+export const initData: Response | Status = {
   '大阪府': {},
   '豊中市': {},
   '茨木市': {},
