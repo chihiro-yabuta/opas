@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (cond?.status === 'in-progress') {
     if (cond.key !== key) {
-      return res.status(200).json(resObj || { status: 'skip', key: key, msg: 'not yet' });
+      return res.status(200).json(resObj || cond);
     } else {
       const time = new Date().getTime();
       if (Number(cond.msg) - time < 180000) {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Provider, useDispatch } from 'react-redux';
 import { store, slice } from '../store';
-import { Status, initData, genres } from  '../store/data';
+import { Status, genres } from  '../store/data';
 
 export function Genre(props: { status: Status }) {
   const dispatch = useDispatch();
@@ -15,10 +15,10 @@ export function Genre(props: { status: Status }) {
   }, []);
   useEffect(() => { dispatch(slice.actions.sendGenre(genre)); }, [genre]);
 
-  const statuses = Object.values(props.status).map(e => e?.status);
-  const inProgressIdx = statuses.indexOf('in-progress');
+  const statuses = Object.values(props.status);
+  const inProgressIdx = statuses.map(e => e?.status).indexOf('in-progress');
   useEffect(() => {
-    inProgressIdx !== -1 && setGenre(props.status[Object.keys(props.status)[inProgressIdx]].key.match(/genre=([^&]+)/)[1]);
+    inProgressIdx !== -1 && setGenre(statuses.map(e => e?.key)[inProgressIdx].match(/genre=([^&]+)/)[1]);
   }, [inProgressIdx]);
 
   return <>
@@ -59,6 +59,6 @@ export function Genre(props: { status: Status }) {
 
 export default function Index() {
   return <Provider store={store}>
-    <Genre status={initData as Status} />
+    <Genre status={{} as Status} />
   </Provider>
 }

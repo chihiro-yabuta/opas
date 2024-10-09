@@ -11,10 +11,10 @@ export function Region(props: { status: Status }) {
 
   useEffect(() => { dispatch(slice.actions.sendRegion(region)); }, [region]);
 
-  const statuses = Object.values(props.status).map(e => e?.status);
-  const inProgressIdx = statuses.indexOf('in-progress');
+  const statuses = Object.values(props.status);
+  const inProgressIdx = statuses.map(e => e?.status).indexOf('in-progress');
   useEffect(() => {
-    inProgressIdx !== -1 && setRegion(Object.keys(initData)[inProgressIdx]);
+    inProgressIdx !== -1 && setRegion(statuses.map(e => e?.key)[inProgressIdx].match(/region=([^&]+)/)[1]);
   }, [inProgressIdx]);
 
   return <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><tr>
@@ -35,6 +35,6 @@ export function Region(props: { status: Status }) {
 
 export default function Index() {
   return <Provider store={store}>
-    <Region status={initData as Status} />
+    <Region status={{} as Status} />
   </Provider>
 }

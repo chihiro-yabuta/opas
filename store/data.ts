@@ -11,14 +11,14 @@ export interface Response {
 }
 
 export interface Status {
-  [region: string]: {
-    status: 'in-progress' | 'skip' | 'error';
+  [key: string]: {
     key: string;
+    status: 'in-progress' | 'skip' | 'error';
     msg: string;
   }
 }
 
-export const initData: Response | Status = {
+export const initData: Response = {
   '大阪府': {},
   '豊中市': {},
   '茨木市': {},
