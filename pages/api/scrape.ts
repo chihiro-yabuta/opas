@@ -130,7 +130,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
           tbls.map((tbl) => {
             let subOrg: string = null;
             const data: string[][][] = [];
-            const org = document.querySelector('.clearfix.kaikan_title').textContent.trim();
+            const org = tbl.querySelector('.clearfix.kaikan_title').textContent.trim();
 
             for (const row of tbl.querySelectorAll('tr')) {
               const s = row.querySelector('.shisetu_name > .clearfix');

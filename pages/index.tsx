@@ -5,6 +5,7 @@ import { Response, Status, initData, regions, genres } from '../store/data';
 import { Genre } from './genre';
 import { Region } from './region';
 import { Calendar } from './calendar';
+import { Notice } from './notice';
 
 function App() {
   const [status, setStatus] = useState(initData as Status);
@@ -12,19 +13,20 @@ function App() {
   const region = useSelector((state: RootState) => state.region);
   const genre = useSelector((state: RootState) => state.genre);
 
+  const updateData = (res: any, regionName: string) => {
+    setStatus((prevData) => { return { ...prevData, [regionName]: res.status && res } });
+    !res.status && setData((prevData) => { return { ...prevData, [regionName]: res } });
+  }
+
   const fetchData = (updt: boolean, regionName: string, genreName: string) => {
     if (regions[regionName].includes(genreName)) {
       const key = `/api?region=${regionName}&genre=${genreName}`;
       fetch(key + (updt ? '&updt=true' : '')).then((res) => res.json()).then((res) => {
-        res.status
-        ? setStatus((prevData) => { return { ...prevData, [regionName]: res } })
-        : setData((prevData) => { return { ...prevData, [regionName]: res } });
+        updateData(res, regionName);
         const id = updt && res.status === 'in-progress' && setInterval(() => {
           fetch(key).then((res) => res.json()).then((res) => {
             if (res.status !== 'in-progress') {
-              res.status
-              ? setStatus((prevData) => { return { ...prevData, [regionName]: res } })
-              : setData((prevData) => { return { ...prevData, [regionName]: res } });
+              updateData(res, regionName);
               clearInterval(id);
             }
           });
@@ -40,8 +42,9 @@ function App() {
   useEffect(() => { region && genre && fetchData(true, region, genre); }, [region, genre]);
 
   return <>
-    <Genre />
-    <Region />
+    <Notice status={status[region]} />
+    <Genre status={status} />
+    <Region status={status} />
     <Calendar data={data} />
   </>
 }

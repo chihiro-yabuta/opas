@@ -93,12 +93,16 @@ function Detail(props: { data: Response[string], date: string }) {
 }
 
 function Header(props: { header: Header[], childKey: React.Key, week?: boolean }) {
-  const color = (i: number) => props.week ? i === 0 ? '#ff0000' : i === 6 ? '#274a78' : '#0095d9' : '#0095d9';
+  const color = (i: number) => i === 0 ? '#ff0000' : i === 6 ? '#274a78' : '#0095d9';
+  const size = 10 / props.header.length;
   return <tr>
     <th style={{  width: '1.5vw' }} />
     {props.header.map((e, i) => <th
       key={`${props.childKey}_${i}`}
-      style={{ border: `solid 1px ${color(i)}`, color: color(i), fontSize: '1.5vw', padding: '5px 0' }}
+      style={{
+        height: '35px', border: 'solid 1px #0095d9',color: props.week ? color(i) : '#0095d9',
+        fontSize: `${1.5 < size ? 1.5 : size < 0.8 ? 0.8 : size}vw`
+      }}
       colSpan={e.colSpan}
       children={e.title.split(':sep:')[0]}
     />)}

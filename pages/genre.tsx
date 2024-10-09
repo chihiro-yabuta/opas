@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Provider, useDispatch } from 'react-redux';
 import { store, slice } from '../store';
-import { genres } from  '../store/data';
+import { Status, initData, genres } from  '../store/data';
 
-export function Genre() {
+export function Genre(props: { status: Status }) {
   const dispatch = useDispatch();
   const ref = useRef(null);
   const [genre, setGenre] = useState(genres[0][0]);
@@ -13,8 +13,13 @@ export function Genre() {
   useEffect(() => {
     document.addEventListener('click', e => !ref.current.contains(e.target) && setIsVisible(false));
   }, []);
-
   useEffect(() => { dispatch(slice.actions.sendGenre(genre)); }, [genre]);
+
+  const statuses = Object.values(props.status).map(e => e?.status);
+  const inProgressIdx = statuses.indexOf('in-progress');
+  useEffect(() => {
+    inProgressIdx !== -1 && setGenre(props.status[Object.keys(props.status)[inProgressIdx]].key.match(/genre=([^&]+)/)[1]);
+  }, [inProgressIdx]);
 
   return <>
     <motion.div
@@ -44,7 +49,7 @@ export function Genre() {
             width: '25%', textAlign: 'center', borderRadius: '30px',
             fontSize: '1.5vw', margin: '10px 1%', padding: '10px 0',
           }}
-          onClick={() => setGenre(g)}
+          onClick={() => inProgressIdx === -1 && setGenre(g)}
           children={g}
         />)}
       </div>)}
@@ -54,6 +59,6 @@ export function Genre() {
 
 export default function Index() {
   return <Provider store={store}>
-    <Genre />
+    <Genre status={initData as Status} />
   </Provider>
 }
