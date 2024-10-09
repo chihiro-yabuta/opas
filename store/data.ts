@@ -1,3 +1,5 @@
+export const re = (e: string) => e.match(/(\d+)年(\d+)月(\d+)日/).slice(1, 4).join('/');
+
 export interface Response {
   [region: string]: {
     [subGenre: string]: {

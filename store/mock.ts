@@ -1,4 +1,18 @@
-export const mockData = {
+import { Status, Response } from './data';
+
+export const mockError: Status[string] = {
+  status: 'error',
+  key: 'opas?region=高石市&genre=バレーボール',
+  msg: 'test'
+};
+
+export const mockInProgress: Status[string] = {
+  status: 'in-progress',
+  key: 'opas?region=高石市&genre=バレーボール',
+  msg: 'test'
+};
+
+export const mockData: Response = {
   '大阪府': {},
   '豊中市': {},
   '茨木市': {},

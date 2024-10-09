@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { Status } from '../store/data';
+import { mockError, mockInProgress } from '../store/mock';
 
 export function Notice(props: { status: Status[string] }) {
   const f = props.status && Object.keys(props.status).length;
@@ -43,6 +44,6 @@ export default function Index() {
   const router = useRouter();
   const { status } = router.query;
   return status
-  ? <Notice status={{ status: 'error', key: 'opas?region=高石市&genre=バレーボール', msg: 'test' }} />
-  : <Notice status={{ status: 'in-progress', key: 'opas?region=高石市&genre=バレーボール', msg: 'test' }} />
+  ? <Notice status={mockError} />
+  : <Notice status={mockInProgress} />
 }

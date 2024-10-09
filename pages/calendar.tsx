@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Provider, useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
 import { store, RootState } from '../store';
-import { Response, initData, color } from '../store/data';
+import { re, Response, initData, color } from '../store/data';
 import { mockData } from '../store/mock';
-const re = (e: string) => e.match(/(\d+)年(\d+)月(\d+)日/).slice(1, 4).join('/');
 
 export function Calendar(props: { data: Response }) {
   const [slctDate, setSlctDate] = useState('');
@@ -35,10 +35,17 @@ export function Calendar(props: { data: Response }) {
     }
   }
 
-  const region = useSelector((state: RootState) => state.region);
-  const data = props.data[region ? region : '高石市'];
+  const region = useSelector((state: RootState) => state.region) || '高石市';
+  const genre = useSelector((state: RootState) => state.genre) || 'バレーボール';
+  const data = props.data[region];
   return <>
-    {Object.keys(data).length && slctDate ? <Detail data={data} date={slctDate} /> : null}
+    {Object.keys(data).length && slctDate ? <Detail
+      genre={genre}
+      region={region}
+      data={data}
+      date={slctDate}
+      onClick={setSlctDate}
+    /> : null}
     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
       {headers.map((header, i) => <tbody key={`0_${i}`}>
         <Header key={`1_${i}`} header={header} childKey={`1_${i}`} week />
@@ -56,8 +63,10 @@ export function Calendar(props: { data: Response }) {
   </>
 }
 
-function Detail(props: { data: Response[string], date: string }) {
+function Detail(props: { genre: string, region: string, data: Response[string], date: string, onClick: React.Dispatch<React.SetStateAction<string>> }) {
   const range: Range = {};
+  const title = `日付：${props.date}　利用目的：${props.genre}　地域：${props.region}`;
+
   Object.entries(props.data).map(([subGenreName, subGenre]) => {
     Object.entries(subGenre).map(([orgName, org]) => {
       Object.entries(org).map(([subOrgName, subOrg]) => {
@@ -76,37 +85,47 @@ function Detail(props: { data: Response[string], date: string }) {
   const orgNames = getSet(Object.keys(range).map(e => e.split(':sep:').slice(1, 3).join(':sep:')));
   const subOrgNames = getSet(Object.keys(range));
 
-  return <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-    <tbody>
-      <Header header={[{ title: props.date, colSpan: Object.keys(range).length }]} childKey={3} />
-      <Header header={subGenreNames} childKey={3} />
-      <Header header={orgNames} childKey={4} />
-      <Header header={subOrgNames} childKey={5} />
-      <TimeTable
-        header={subOrgNames}
-        range={range}
-        rangeLen={1}
-        childKey={6}
-      />
-    </tbody>
-  </table>
+  return <motion.div
+    initial={{ y: '-100%' }}
+    animate={{ y: '0' }}
+    style={{
+      position: 'fixed', top: '0', left: '0', zIndex: '1',
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      width: '100%', height: '100%', backgroundColor: '#00000080'
+    }}
+    onClick={() => props.onClick('')}
+  ><table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <tbody>
+        <Header header={[{ title: title, colSpan: Object.keys(range).length }]} childKey={3} />
+        <Header header={subGenreNames} childKey={3} />
+        <Header header={orgNames} childKey={4} />
+        <Header header={subOrgNames} childKey={5} />
+        <TimeTable
+          header={subOrgNames}
+          range={range}
+          rangeLen={1}
+          childKey={6}
+        />
+      </tbody>
+    </table>
+  </motion.div>
 }
 
 function Header(props: { header: Header[], childKey: React.Key, week?: boolean }) {
   const color = (i: number) => i === 0 ? '#ff0000' : i === 6 ? '#274a78' : '#0095d9';
   const size = 10 / props.header.length;
-  return <tr>
+  return <tr style={{ borderTop: 'solid 1px #84a2d4', backgroundColor: '#ffffff' }}>
     <th style={{  width: '1.5vw' }} />
     {props.header.map((e, i) => <th
       key={`${props.childKey}_${i}`}
       style={{
-        height: '35px', border: 'solid 1px #0095d9',color: props.week ? color(i) : '#0095d9',
+        height: '35px', border: 'solid 1px #84a2d4', color: props.week ? color(i) : '#0095d9',
         fontSize: `${1.5 < size ? 1.5 : size < 0.8 ? 0.8 : size}vw`
       }}
       colSpan={e.colSpan}
       children={e.title.split(':sep:')[0]}
     />)}
-    <th style={{  width: '1.5vw' }} />
+    <th style={{ borderTop: 'solid 1px #84a2d4', width: '1.5vw' }} />
   </tr>
 }
 
