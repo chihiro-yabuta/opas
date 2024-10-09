@@ -34,6 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json(cond);
       } else {
         await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));
+        await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));
         return res.status(200).json({ status: 'error', key: key, msg: 'stuck' });
       }
     }

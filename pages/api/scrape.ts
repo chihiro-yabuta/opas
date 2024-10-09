@@ -33,6 +33,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
     }
   } catch (error) {
     await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
+    await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`dl error: ${error.message}`));
     return;
   }
@@ -42,6 +43,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
     pageInit = await browserInit.newPage();
   } catch (error) {
     await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
+    await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`init error: ${error.message}`));
     return;
   }
@@ -177,6 +179,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
   } catch (error) {
     await browserInit.close();
     await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
+    await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: error.message }));
     await log(logObj(`main error: ${error.message}`));
     return;
   }
