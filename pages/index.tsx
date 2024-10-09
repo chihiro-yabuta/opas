@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Provider, useSelector } from 'react-redux';
+import Head from 'next/head';
 import { store, RootState } from '../store';
 import { Response, Status, initData, regions } from '../store/data';
 import { Genre } from './genre';
@@ -53,12 +54,25 @@ function App() {
   }, [genre]);
   useEffect(() => { region && genre && fetchData(true, region, genre); }, [region, genre]);
 
-  return <>
+  return <div style={{ marginBottom: '50px' }}>
+    <Head>
+      <title>OPAS NEXT</title>
+      <link rel='icon' href='https://www.opas.jp/icon/favicon.ico' />
+    </Head>
     <Notice region={region} genre={genre} status={status} />
+    <a href='https://reserve.opas.jp/portal/menu/DantaiSelect.cgi?action=ReNew' style={{ display: 'flex', justifyContent: 'center' }} target='_blank'>
+      <img style={{ width: '80%' }} src='https://reserve.opas.jp/portal/img/std/title/mainImage.gif' />
+    </a>
+    <p style={{ fontSize: '1.5vw' }}>利用目的を選択して下さい</p>
+    <p style={{ fontSize: '1.5vw' }}>選択すると利用可能時間を更新します</p>
     <Genre status={status} />
+    <p style={{ fontSize: '1.5vw' }}>地域を選択して下さい</p>
+    <p style={{ fontSize: '1.5vw' }}>選択すると利用可能時間を更新します</p>
     <Region status={status} />
+    <p style={{ fontSize: '1.5vw' }}>選択している目的別の利用可能時間を全地域、色別に表示します</p>
+    <p style={{ fontSize: '1.5vw' }}>日付を選択すると選択している地域別に利用可能な施設を表示します</p>
     <Calendar data={data} />
-  </>
+  </div>
 }
 
 export default function Index() {

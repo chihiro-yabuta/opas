@@ -378,7 +378,7 @@ export const regions = {
 export const color = [
   '#FF0000',
   '#0000FF',
-  '#FFFF00',
+  '#CCCC00',
   '#008000',
   '#FFA500',
   '#800080',
@@ -389,7 +389,7 @@ export const color = [
   '#00FF00',
   '#40E0D0',
   '#FF00FF',
-  '#F5F5DC',
+  '#C5C5AC',
   '#C0C0C0',
   '#FFD700',
   '#000080',
