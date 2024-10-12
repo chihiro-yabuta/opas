@@ -1,12 +1,6 @@
-import fs from 'fs';
 import { appendFile } from 'fs/promises';
 import { RedisClientType } from 'redis';
-import https from 'https';
-import AdmZip from 'adm-zip';
-import { Page, Browser, ElementHandle, launch } from 'puppeteer-core';
-
-const url = 'https://download-chromium.appspot.com/dl/Linux?type=snapshots';
-const prod = process.env.NODE_ENV === 'production';
+import { Page, Browser, ElementHandle, launch } from 'puppeteer';
 
 export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: string) {
   let browserInit: Browser;
@@ -14,29 +8,6 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
   let resObj: Response = {};
   const key = `opas?region=${reqRegion}&genre=${reqGenre}`;
   const logObj = (l: string): Log => { return { region: reqRegion, genre: reqGenre, log: l } };
-
-  try {
-    if (!fs.existsSync('/chromium.zip')) {
-      await new Promise<void>((resolve, reject) => https.get(url,
-        (res) => https.get(res.headers.location, (r) => {
-          const f = fs.createWriteStream('/chromium.zip');
-          r.pipe(f);
-          f.on('finish', () => {
-            f.close();
-            resolve();
-          });
-        })
-      ));
-
-      const zip = new AdmZip('/chromium.zip');
-      zip.extractAllTo('/', true);
-    }
-  } catch (error) {
-    await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: error.message }));
-    await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: error.message }));
-    await log(logObj(`dl error: ${error.message}`));
-    return;
-  }
 
   try {
     browserInit = await launch(args);
@@ -186,6 +157,7 @@ export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: 
 }
 
 async function log(logObj: Log) {
+  const prod = process.env.NODE_ENV === 'production';
   !prod && await appendFile(`log/${logObj.region}${logObj.genre}.log`, logObj.log + '\n');
   console.log(logObj.log);
 }
@@ -212,7 +184,6 @@ interface Log {
 }
 
 const args = {
-  executablePath: prod ? '/chrome-linux/chrome' : '/usr/bin/chromium',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
