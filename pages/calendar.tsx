@@ -94,7 +94,7 @@ function Detail(props: { genre: string, region: string, data: Response[string], 
       width: '100%', height: '100%', backgroundColor: '#00000080'
     }}
     onClick={() => props.onClick('')}
-  ><table style={{ width: '100%', borderCollapse: 'collapse' }}>
+  ><table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#ffffff' }}>
       <tbody>
         <Header header={[{ title: title, colSpan: Object.keys(range).length }]} childKey={3} />
         <Header header={subGenreNames} childKey={3} />
@@ -114,7 +114,7 @@ function Detail(props: { genre: string, region: string, data: Response[string], 
 function Header(props: { header: Header[], childKey: React.Key, week?: boolean }) {
   const color = (i: number) => i === 0 ? '#ff0000' : i === 6 ? '#274a78' : '#0095d9';
   const size = 10 / props.header.length;
-  return <tr style={{ borderTop: 'solid 1px #84a2d4', backgroundColor: '#ffffff' }}>
+  return <tr style={{ borderTop: 'solid 1px #84a2d4', borderBottom: 'solid 1px #84a2d4' }}>
     <th style={{  width: '1.5vw' }} />
     {props.header.map((e, i) => <th
       key={`${props.childKey}_${i}`}
@@ -125,7 +125,7 @@ function Header(props: { header: Header[], childKey: React.Key, week?: boolean }
       colSpan={e.colSpan}
       children={e.title.split(':sep:')[0]}
     />)}
-    <th style={{ borderTop: 'solid 1px #84a2d4', width: '1.5vw' }} />
+    <th style={{ width: '1.5vw' }} />
   </tr>
 }
 

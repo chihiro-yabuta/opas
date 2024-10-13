@@ -1,5 +1,7 @@
 FROM node
 
+RUN apt-get update && apt install -y chromium
+
 WORKDIR /opas
 COPY . .
 RUN npm i

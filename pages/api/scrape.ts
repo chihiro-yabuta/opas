@@ -1,6 +1,6 @@
 import { appendFile } from 'fs/promises';
 import { RedisClientType } from 'redis';
-import { Page, Browser, ElementHandle, launch } from 'puppeteer';
+import { Page, Browser, ElementHandle, launch } from 'puppeteer-core';
 
 export async function scrape(cli: RedisClientType, reqRegion: string, reqGenre: string) {
   let browserInit: Browser;
@@ -184,6 +184,7 @@ interface Log {
 }
 
 const args = {
+  executablePath: '/usr/bin/chromium',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
