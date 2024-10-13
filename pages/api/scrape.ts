@@ -189,5 +189,4 @@ const args = {
     '--no-sandbox',
     '--disable-setuid-sandbox',
   ],
-  timeout: 0,
 }
