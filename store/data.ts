@@ -11,11 +11,10 @@ export interface Response {
 }
 
 export interface Status {
-  [key: string]: {
-    key: string;
-    status: 'in-progress' | 'skip' | 'error';
-    msg: string;
-  }
+  region: string;
+  genre: string;
+  status: 'in-progress' | 'error';
+  msg: string;
 }
 
 export const initData: Response = {

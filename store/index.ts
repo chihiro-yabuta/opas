@@ -3,6 +3,7 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 const initialState = {
   region: '',
   genre: '',
+  updt: null as number,
 };
 
 export const slice = createSlice({
@@ -14,6 +15,9 @@ export const slice = createSlice({
     },
     sendGenre(state, action: PayloadAction<string>) {
       state.genre = action.payload;
+    },
+    sendUpdt(state, action: PayloadAction<number>) {
+      state.updt = action.payload;
     },
   },
 });

@@ -1,36 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Provider, useDispatch } from 'react-redux';
+import { IoReload } from 'react-icons/io5';
 import { store, slice } from '../store';
-import { Status, genres } from  '../store/data';
+import { genres } from  '../store/data';
 
-export function Genre(props: { status: Status }) {
+export function Genre() {
   const dispatch = useDispatch();
   const ref = useRef(null);
   const [genre, setGenre] = useState(genres[0][0]);
   const [isVisible, setIsVisible] = useState(false);
+  const [updt, setUpdt] = useState(1);
+  const [rotate, setRotate] = useState(0);
 
   useEffect(() => {
     document.addEventListener('click', e => !ref.current.contains(e.target) && setIsVisible(false));
   }, []);
   useEffect(() => { dispatch(slice.actions.sendGenre(genre)); }, [genre]);
 
-  const statuses = Object.values(props.status);
-  const inProgressIdx = statuses.map(e => e?.status).indexOf('in-progress');
-  useEffect(() => {
-    inProgressIdx !== -1 && setGenre(statuses.map(e => e?.key)[inProgressIdx].match(/genre=([^&]+)/)[1]);
-  }, [inProgressIdx]);
-
   return <>
-    <motion.div
-      ref={ref}
-      style={{
-        textAlign: 'center', border: '2px solid #043ab9', borderRadius: '30px',
-        fontSize: '2vw', padding: '10px 0',
-      }}
-      onClick={() => setIsVisible(true)}
-      children={genre}
-    />
+    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0 8vw' }}>
+      <motion.div
+        ref={ref}
+        style={{
+          textAlign: 'center', border: '2px solid #043ab9', borderRadius: '30px',
+          fontSize: '2vw', padding: '10px 0', width: '90%'
+        }}
+        onClick={() => setIsVisible(true)}
+        children={genre}
+      />
+      <motion.div
+        animate={{ rotate: rotate * 360 }}
+        style={{ display: 'flex', alignItems: 'center' }}
+        onClick={() => {
+          setRotate(rotate + 1);
+          setUpdt(updt % 2 + 1);
+          dispatch(slice.actions.sendUpdt(updt % 2 + 1));
+        }}
+        children={<IoReload size='4vw' />}
+        transition={{ duration: 0.5 }}
+      />
+    </div>
     <motion.div
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: isVisible ? 'auto' : 0, opacity: Number(isVisible) }}
@@ -49,7 +59,7 @@ export function Genre(props: { status: Status }) {
             width: '25%', textAlign: 'center', borderRadius: '30px',
             fontSize: '1.5vw', margin: '10px 1%', padding: '10px 0',
           }}
-          onClick={() => inProgressIdx === -1 && setGenre(g)}
+          onClick={() => setGenre(g)}
           children={g}
         />)}
       </div>)}
@@ -59,6 +69,6 @@ export function Genre(props: { status: Status }) {
 
 export default function Index() {
   return <Provider store={store}>
-    <Genre status={{} as Status} />
+    <Genre />
   </Provider>
 }

@@ -1,19 +1,17 @@
 import { Status, Response } from './data';
 
 export const mockError: Status = {
-  'opas?region=高石市&genre=バレーボール': {
-    key: 'opas?region=高石市&genre=バレーボール',
-    status: 'error',
-    msg: 'test'
-  }
+  status: 'error',
+  region: '高石市',
+  genre: 'バレーボール',
+  msg: 'test'
 };
 
 export const mockInProgress: Status = {
-  'opas?region=高石市&genre=バレーボール': {
-    key: 'opas?region=高石市&genre=バレーボール',
-    status: 'in-progress',
-    msg: 'test'
-  }
+  status: 'in-progress',
+  region: '高石市',
+  genre: 'バレーボール',
+  msg: 'test'
 };
 
 export const mockData: Response = {
