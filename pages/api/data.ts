@@ -9,6 +9,18 @@ export const agent = new Agent({
   secureOptions: SSL_OP_LEGACY_SERVER_CONNECT
 });
 
+export interface Org {
+  [region: string]: {
+    [org: string]: {
+      id: string;
+      subGenres: {
+        id: string;
+        name: string;
+      }[];
+    };
+  };
+}
+
 export interface Response {
   [region: string]: {
     [subGenre: string]: {
