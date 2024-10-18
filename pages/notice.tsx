@@ -9,12 +9,12 @@ export function Notice(props: { status: Status }) {
   switch (props.status.status) {
     case 'in-progress':
       color = '#10B98180';
-      noticeLine1 = `「${props.status.genre}」「${props.status.region}」の更新中です`;
+      noticeLine1 = `「${props.status.genre}」の更新中です`;
       noticeLine2 = 'ページを更新せず、しばらくお待ちください';
       break;
     case 'error':
       color = '#EF444480';
-      noticeLine1 = `「${props.status.genre}」「${props.status.region}」の更新に失敗しました`;
+      noticeLine1 = `「${props.status.genre}」の更新に失敗しました`;
       noticeLine2 = 'ページを更新してください';
       msg = props.status.msg;
       break;

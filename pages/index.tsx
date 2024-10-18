@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Provider, useSelector } from 'react-redux';
 import Head from 'next/head';
 import { store, RootState } from '../store';
-import { Response, Status, initData, regions } from '../store/data';
+import { Response, Status, initData } from '../store/data';
 import { Genre } from './genre';
 import { Region } from './region';
 import { Calendar } from './calendar';
@@ -11,52 +11,44 @@ import { Notice } from './notice';
 function App() {
   const [status, setStatus] = useState({} as Status);
   const [data, setData] = useState(initData as Response);
-  const region = useSelector((state: RootState) => state.region);
   const genre = useSelector((state: RootState) => state.genre);
   const updt = useSelector((state: RootState) => state.updt);
 
-  const updateData = (res: any, regionName: string, isUpdt: boolean) => {
+  const updateData = (res: any) => {
     res.status !== 'skip' ? setStatus({
-      region: res.key && res.key.match(/region=([^&]+)/)[1],
       genre: res.key && res.key.match(/genre=([^&]+)/)[1],
       status: res.status,
       msg: res.msg,
     }) : setStatus({} as Status);
-    !res.status && isUpdt && setData((prevData) => { return { ...prevData, [regionName]: res } });
+    !res.status && setData(res);
   }
 
-  const fetchData = (isUpdt: boolean, regionName: string, genreName: string) => {
-    if (regions[regionName].includes(genreName)) {
-      const key = `/api?region=${regionName}&genre=${genreName}`;
-      fetch(key + (isUpdt ? '&updt=true' : '')).then((res) => res.json()).then((res) => {
-        updateData(res, regionName, true);
-        if (isUpdt && res.status === 'in-progress') {
-          const regionKey = res.key.match(/region=([^&]+)/)[1];
-          const genreKey = res.key.match(/genre=([^&]+)/)[1];
-          const id = setInterval(() => {
-            fetch(`/api?region=${regionKey}&genre=${genreKey}`).then((res) => res.json()).then((res) => {
-              if (res.status !== 'in-progress') {
-                updateData(res, regionKey, genreKey === genreName);
-                clearInterval(id);
-              }
-            });
-          }, 3000);
-        }
-      });
-    } else {
-      const key = `opas?region=${region}&genre=${genre}`;
-      setStatus((prevData) => { return { ...prevData, [key]: { status: 'skip', key: key, msg: 'not exists' } } });
-    }
+  const fetchData = (isUpdt: boolean, genreName: string) => {
+    const key = `/api?genre=${genreName}`;
+    fetch(key + (isUpdt ? '&updt=true' : '')).then((res) => res.json()).then((res) => {
+      updateData(res);
+      if (isUpdt && res.status === 'in-progress') {
+        const genreKey = res.key.match(/genre=([^&]+)/)[1];
+        const id = setInterval(() => {
+          fetch(`/api?genre=${genreKey}`).then((res) => res.json()).then((res) => {
+            if (res.status !== 'in-progress') {
+              updateData(res);
+              clearInterval(id);
+            }
+          });
+        }, 3000);
+      }
+    });
   }
 
   useEffect(() => {
     if(genre) {
       setStatus({} as Status);
       setData(initData as Response);
-      Object.keys(initData).map(r => fetchData(false, r, genre));
+      fetchData(false, genre);
     }
   }, [genre]);
-  useEffect(() => { updt && status.status !== 'in-progress' && fetchData(true, region, genre); }, [updt]);
+  useEffect(() => { updt && status.status !== 'in-progress' && fetchData(true, genre); }, [updt]);
 
   return <div style={{ marginBottom: '50px' }}>
     <Head>

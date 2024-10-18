@@ -2,14 +2,12 @@ import { Status, Response } from './data';
 
 export const mockError: Status = {
   status: 'error',
-  region: '高石市',
   genre: 'バレーボール',
   msg: 'test'
 };
 
 export const mockInProgress: Status = {
   status: 'in-progress',
-  region: '高石市',
   genre: 'バレーボール',
   msg: 'test'
 };

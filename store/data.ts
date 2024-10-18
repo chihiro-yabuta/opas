@@ -11,7 +11,6 @@ export interface Response {
 }
 
 export interface Status {
-  region: string;
   genre: string;
   status: 'in-progress' | 'error';
   msg: string;
