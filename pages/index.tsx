@@ -20,7 +20,9 @@ function App() {
       status: res.status,
       msg: res.msg,
     }) : setStatus({} as Status);
-    !res.status && setData(res);
+    !res.status && Object.entries(res).map(
+      ([k, v]) => setData((p) => { return { ...p, [k]: v } as Response })
+    );
   }
 
   const fetchData = (isUpdt: boolean, genreName: string) => {

@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(updt ? cond : resObj || { status: 'skip', key: key, msg: 'not yet' });
     } else {
       const time = new Date().getTime();
-      if (Number(cond.msg) - time < 180000) {
+      if (Number(cond.msg) - time < 300000) {
         return res.status(200).json(cond);
       } else {
         await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));

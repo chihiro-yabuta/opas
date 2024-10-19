@@ -10,7 +10,7 @@ export function Notice(props: { status: Status }) {
     case 'in-progress':
       color = '#10B98180';
       noticeLine1 = `「${props.status.genre}」の更新中です`;
-      noticeLine2 = 'ページを更新せず、しばらくお待ちください';
+      noticeLine2 = 'ページを更新せず、3分ほどお待ちください';
       break;
     case 'error':
       color = '#EF444480';
