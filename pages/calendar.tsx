@@ -114,12 +114,12 @@ function Detail(props: { genre: string, region: string, data: Response[string], 
 function Header(props: { header: Header[], childKey: React.Key, week?: boolean }) {
   const color = (i: number) => i === 0 ? '#ff0000' : i === 6 ? '#274a78' : '#0095d9';
   const size = 10 / props.header.length;
-  return <tr style={{ borderTop: 'solid 1px #84a2d4', borderBottom: 'solid 1px #84a2d4' }}>
+  return <tr style={{ borderTop: 'solid 2px #84a2d4', borderBottom: 'solid 2px #84a2d4' }}>
     <th style={{  width: '1.5vw' }} />
     {props.header.map((e, i) => <th
       key={`${props.childKey}_${i}`}
       style={{
-        height: '35px', border: 'solid 1px #84a2d4', color: props.week ? color(i) : '#0095d9',
+        height: '35px', border: 'solid 2px #84a2d4', color: props.week ? color(i) : '#0095d9',
         fontSize: `${1.5 < size ? 1.5 : size < 0.8 ? 0.8 : size}vw`
       }}
       colSpan={e.colSpan}
@@ -140,8 +140,8 @@ function TimeTable(props: { header: Header[], range: Range, rangeLen: number, ch
       style={{
         backgroundColor: `${props.range[e.title]?.[n - Number(f === 0)]?.includes(i) ? props.week ? color[n - Number(f === 0)] : '#0095d9' : '#ffffff'}`,
         height: '10px', textAlign: f === 0 && n === 0 ? 'right' : 'left',
-        borderTop: i % 4 === 0 ? 'solid 0.1px #84a2d4' : 'none', borderLeft: n === Number(f === 0) ? 'solid 0.1px #84a2d4': 'none',
-        borderBottom: i === 23 ? 'solid 0.1px #84a2d4': 'none', borderRight: f === headerLen && n === props.rangeLen-Number(f !== 0) ? 'solid 0.1px #84a2d4': 'none'
+        borderTop: i % 4 === 0 ? 'solid 1px #84a2d4' : 'none', borderLeft: n === Number(f === 0) ? 'solid 1px #84a2d4': 'none',
+        borderBottom: i === 23 ? 'solid 1px #84a2d4': 'none', borderRight: f === headerLen && n === props.rangeLen-Number(f !== 0) ? 'solid 1px #84a2d4': 'none'
       }}
       onClick={() => props.range[e.title]?.[regionIdx]?.length && props.onClick?.(e.title)}
     ><p

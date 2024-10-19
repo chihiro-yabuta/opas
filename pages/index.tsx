@@ -14,13 +14,13 @@ function App() {
   const genre = useSelector((state: RootState) => state.genre);
   const updt = useSelector((state: RootState) => state.updt);
 
-  const updateData = (res: any) => {
+  const updateData = (res: any, reqGenreName: string, tgtGenreName: string) => {
     res.status ? setStatus({
       genre: res.key && res.key.match(/genre=([^&]+)/)[1],
       status: res.status,
       msg: res.msg,
     }) : setStatus({} as Status);
-    !res.status && Object.entries(res).map(
+    !res.status && reqGenreName === tgtGenreName && Object.entries(res).map(
       ([k, v]) => setData((p) => { return { ...p, [k]: v } as Response })
     );
   }
@@ -28,13 +28,13 @@ function App() {
   const fetchData = (isUpdt: boolean, genreName: string) => {
     const key = `/api?genre=${genreName}`;
     fetch(key + (isUpdt ? '&updt=true' : '')).then((res) => res.json()).then((res) => {
-      updateData(res);
+      updateData(res, genreName, '');
       if (isUpdt && res.status === 'in-progress') {
         const genreKey = res.key.match(/genre=([^&]+)/)[1];
         const id = setInterval(() => {
           fetch(`/api?genre=${genreKey}`).then((res) => res.json()).then((res) => {
             if (res.status !== 'in-progress') {
-              updateData(res);
+              updateData(res, genreName, genreKey);
               clearInterval(id);
             }
           });

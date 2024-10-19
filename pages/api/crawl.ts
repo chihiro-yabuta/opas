@@ -46,6 +46,9 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
   let firstRowDate = await scrape(resObj, subOrgMap, init.data, '');
   const date = new Date(firstRowDate);
   const slct = (new Set(subGenreKey.split('&checkMeisaiUniqKey=').map(e => e.slice(0, -3)))).size > 2 ? 'Browser' : 'Select';
+  const maxDate = new Date(firstRowDate);
+  maxDate.setMonth(maxDate.getMonth() + 2);
+  maxDate.setDate(maxDate.getDate() - maxDate.getDay() - 2);
 
   while (1) {
     date.setDate(date.getDate() + 7);
@@ -64,6 +67,7 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
         console.log('success', regions[regionId][1], date);
         firstRowDate = await scrape(resObj, subOrgMap, res.data, firstRowDate);
         if (!firstRowDate) break;
+        if (new Date(firstRowDate) > maxDate) break;
       }
     } catch {
       console.log('error', regions[regionId][1], date);
