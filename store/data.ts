@@ -387,7 +387,7 @@ export const color = [
   '#00FF00',
   '#40E0D0',
   '#FF00FF',
-  '#C5C5AC',
+  '#7D7D7D',
   '#C0C0C0',
   '#FFD700',
   '#000080',

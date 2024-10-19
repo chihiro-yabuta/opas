@@ -64,7 +64,7 @@ function App() {
     <p style={{ fontSize: '1.5vw' }}>地域を選択して下さい</p>
     <Region />
     <p style={{ fontSize: '1.5vw' }}>選択している目的別の利用可能時間を全地域、色別に表示します</p>
-    <p style={{ fontSize: '1.5vw' }}>リロードボタンを押すと選択している地域の情報を更新します</p>
+    <p style={{ fontSize: '1.5vw' }}>リロードボタンを押すと選択している目的の情報を更新します</p>
     <p style={{ fontSize: '1.5vw' }}>日付を選択すると選択している地域別に利用可能な施設を表示します</p>
     <p style={{ fontSize: '1.5vw' }}>負荷軽減のため、1度に更新できる情報は1種類のみです</p>
     <Calendar data={data} />

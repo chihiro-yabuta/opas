@@ -57,14 +57,17 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
         { headers: { Cookie: `${sessionId};${webId}` }, httpsAgent: agent, responseType: 'arraybuffer' }
       );
       if (new JSDOM(res.data).window.document.getElementById('formMain').getAttribute('name').includes('error')) {
+        console.log('continue', regions[regionId][1], date);
         await new Promise(resolve => setTimeout(resolve, 3000));
         [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
         date.setDate(date.getDate() - 7);
       } else {
+        console.log('success', regions[regionId][1], date);
         firstRowDate = await scrape(resObj, subOrgMap, res.data, firstRowDate);
         if (!firstRowDate) break;
       }
     } catch {
+      console.log('error', regions[regionId][1], date);
       await new Promise(resolve => setTimeout(resolve, 10000));
       [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
       date.setDate(date.getDate() - 7);
