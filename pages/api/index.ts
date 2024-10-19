@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { RedisClientType, createClient } from 'redis';
 import { crawl } from './crawl';
+import { Response, regions } from './data';
 
 let cli: RedisClientType;
 
@@ -21,18 +22,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const key = `opas?genre=${reqGenre}`;
   const cond = JSON.parse(await cli.get('opas'));
-  const resObj = JSON.parse(await cli.get(key));
+  const resObj: Response = {};
 
   if (cond?.status === 'in-progress') {
     if (cond.key !== key) {
-      return res.status(200).json(updt ? cond : resObj || { status: 'skip', key: key, msg: 'not yet' });
+      if (updt) {
+        return res.status(200).json(cond);
+      } else {
+        await Promise.all(Object.values(regions).map(async (v) => {
+          resObj[v[1]] = JSON.parse(await cli.get(`${key}&region=${v[1]}`));
+        }));
+        return res.status(200).json(resObj);
+      }
     } else {
       const time = new Date().getTime();
       if (Number(cond.msg) - time < 300000) {
         return res.status(200).json(cond);
       } else {
         await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));
-        await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: 'stuck' }));
         return res.status(200).json({ status: 'error', key: key, msg: 'stuck' });
       }
     }
@@ -43,7 +50,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       crawl(cli, reqGenre, key);
       return res.status(200).json({ status: 'in-progress', key: key, msg: time });
     } else {
-      return res.status(200).json(resObj || { status: 'skip', key: key, msg: 'not yet' });
+      await Promise.all(Object.values(regions).map(async (v) => {
+        resObj[v[1]] = JSON.parse(await cli.get(`${key}&region=${v[1]}`));
+      }));
+      return res.status(200).json(resObj);
     }
   }
 }

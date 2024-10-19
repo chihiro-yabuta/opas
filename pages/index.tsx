@@ -15,7 +15,7 @@ function App() {
   const updt = useSelector((state: RootState) => state.updt);
 
   const updateData = (res: any) => {
-    res.status !== 'skip' ? setStatus({
+    res.status ? setStatus({
       genre: res.key && res.key.match(/genre=([^&]+)/)[1],
       status: res.status,
       msg: res.msg,

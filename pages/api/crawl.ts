@@ -1,11 +1,11 @@
 import { RedisClientType } from 'redis';
 import axios, { AxiosResponse } from 'axios';
 import { JSDOM } from 'jsdom';
-import { base, genreSlct, login, agent, Response, Org, initOrg, regions, genres } from './data';
+import { base, genreSlct, login, agent, Response, Org, regions, genres } from './data';
 
 export async function crawl(cli: RedisClientType, genre: string, key: string) {
   try {
-    let orgMap: Org = initOrg;
+    let orgMap: Org = {};
     let resObj: Response = {};
     const subGenres = await selectP0(genre);
     await Promise.all(subGenres.map(async (subGenre) => {
@@ -35,10 +35,9 @@ export async function crawl(cli: RedisClientType, genre: string, key: string) {
       }));
     }));
     await cli.set('opas', JSON.stringify({ status: 'success', key: key, msg: 'done' }));
-    await cli.set(key, JSON.stringify(resObj));
+    await Promise.all(Object.entries(resObj).map(async ([k, v]) => await cli.set(`${key}&region=${k}`, JSON.stringify(v))));
   } catch (e) {
     await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: e.message }));
-    await cli.set(key, JSON.stringify({ status: 'error', key: key, msg: e.message }));
   }
 }
 
@@ -152,6 +151,7 @@ async function enter(orgMap: Org, genre: string, subGenre: string) {
     const subOrgId = e.getAttribute('onclick')?.split(',')[1].slice(1, -1);
     if (subOrgId) {
       const name = [...e.querySelectorAll('td')].map(e => e.textContent.trim());
+      orgMap[subOrgId.split('_')[0]] ||= {};
       orgMap[subOrgId.split('_')[0]][name.join('|')] ||= { id: subOrgId, subGenres: [] };
       orgMap[subOrgId.split('_')[0]][name.join('|')].subGenres.push({
         id: subGenre.split('_')[0],

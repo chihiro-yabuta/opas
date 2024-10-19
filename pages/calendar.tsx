@@ -10,7 +10,7 @@ export function Calendar(props: { data: Response }) {
   const range: Range = {};
   const regionLen = Object.values(props.data).length;
 
-  Object.values(props.data).map((e, i) => { Object.keys(e).length &&
+  Object.values(props.data).map((e, i) => { e &&
     Object.values(e).map(e => Object.values(e).map(e => Object.values(e))).flat(3).map((s) => {
       const [jaDate, time] = s.split(' | ');
       const reDate = re(jaDate);
@@ -39,7 +39,7 @@ export function Calendar(props: { data: Response }) {
   const genre = useSelector((state: RootState) => state.genre) || 'バレーボール';
   const data = props.data[region];
   return <>
-    {Object.keys(data).length && slctDate ? <Detail
+    {data && slctDate ? <Detail
       genre={genre}
       region={region}
       data={data}
