@@ -28,7 +28,7 @@ function App() {
   const fetchData = (isUpdt: boolean, genreName: string) => {
     const key = `/api?genre=${genreName}`;
     fetch(key + (isUpdt ? '&updt=true' : '')).then((res) => res.json()).then((res) => {
-      updateData(res, genreName, '');
+      updateData(res, genreName, genreName);
       if (isUpdt && res.status === 'in-progress') {
         const genreKey = res.key.match(/genre=([^&]+)/)[1];
         const id = setInterval(() => {
