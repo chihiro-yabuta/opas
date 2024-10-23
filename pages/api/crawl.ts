@@ -38,6 +38,8 @@ export async function crawl(cli: RedisClientType, genre: string, key: string) {
     await Promise.all(Object.entries(resObj).map(async ([k, v]) => await cli.set(`${key}&region=${k}`, JSON.stringify(v))));
   } catch (e) {
     await cli.set('opas', JSON.stringify({ status: 'error', key: key, msg: e.message }));
+  } finally {
+    await cli.disconnect();
   }
 }
 
@@ -49,6 +51,7 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
   const maxDate = new Date(firstRowDate);
   maxDate.setMonth(maxDate.getMonth() + 2);
 
+  const g = Object.entries(genres).reduce((acc, [k, v]) => v.charAt(0) === subGenreId.split('=')[1].charAt(0) ? k : acc, '');
   while (1) {
     date.setDate(date.getDate() + 7);
     try {
@@ -58,12 +61,12 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
         { headers: { Cookie: `${sessionId};${webId}` }, httpsAgent: agent, responseType: 'arraybuffer' }
       );
       if (new JSDOM(res.data).window.document.getElementById('formMain').getAttribute('name').includes('error')) {
-        console.log('continue', regions[regionId][1], date);
+        console.log('continue', g, regions[regionId][1], date);
         await new Promise(resolve => setTimeout(resolve, 3000));
         [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
         date.setDate(date.getDate() - 7);
       } else {
-        console.log('success', regions[regionId][1], date);
+        console.log('success', g, regions[regionId][1], date);
         firstRowDate = await scrape(resObj, subOrgMap, res.data, firstRowDate);
         if (!firstRowDate) break;
         const d = new Date(firstRowDate);
@@ -71,7 +74,7 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
         if (d > maxDate) break;
       }
     } catch {
-      console.log('error', regions[regionId][1], date);
+      console.log('error', g, regions[regionId][1], date);
       await new Promise(resolve => setTimeout(resolve, 10000));
       [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
       date.setDate(date.getDate() - 7);
