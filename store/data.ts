@@ -1,43 +1,25 @@
-export const re = (e: string) => e.match(/(\d+)年(\d+)月(\d+)日/).slice(1, 4).join('/');
-
-export interface Response {
-  [region: string]: {
-    [subGenre: string]: {
-      [org: string]: {
-        [subOrg: string]: string[];
-      }
-    }
-  }
-}
-
-export interface Status {
-  genre: string;
-  status: 'in-progress' | 'error';
-  msg: string;
-}
-
-export const initData: Response = {
-  '大阪府': {},
-  '豊中市': {},
-  '茨木市': {},
-  '堺市': {},
-  '高石市': {},
-  '大阪狭山市': {},
-  '熊取町': {},
-  '池田市': {},
-  '東大阪市': {},
-  '吹田市': {},
-  '和泉市': {},
-  '高槻市': {},
-  '河内長野市': {},
-  '大阪市': {},
-  '富田林市': {},
-  '河南町': {},
-  '太子町': {},
-  '千早赤阪村': {},
+export const regionMap = {
+  '大阪府': false,
+  '豊中市': false,
+  '茨木市': false,
+  '堺市': false,
+  '高石市': false,
+  '大阪狭山市': false,
+  '熊取町': false,
+  '池田市': false,
+  '東大阪市': false,
+  '吹田市': false,
+  '和泉市': false,
+  '高槻市': false,
+  '河内長野市': false,
+  '大阪市': true,
+  '富田林市': false,
+  '河南町': false,
+  '太子町': false,
+  '千早赤阪村': false,
 };
 
-export const genres = [
+export const genreLists = [
   [
     'バレーボール',
     'バスケットボール',
@@ -70,7 +52,7 @@ export const genres = [
   ],
 ];
 
-export const regions = {
+export const regionLists = {
   '大阪府': [
     'テニス',
     '野球・ソフトボール',
@@ -373,23 +355,24 @@ export const regions = {
   ],
 };
 
-export const color = [
-  '#FF0000',
-  '#0000FF',
-  '#CCCC00',
-  '#008000',
-  '#FFA500',
-  '#800080',
-  '#FFC0CB',
-  '#A52A2A',
-  '#808080',
-  '#ADD8E6',
-  '#00FF00',
-  '#40E0D0',
-  '#FF00FF',
-  '#7D7D7D',
-  '#C0C0C0',
-  '#FFD700',
-  '#000080',
-  '#DC143C',
-];
+export const regionColorMap = {
+  '大阪府': '#FF0000',
+  '豊中市': '#0000FF',
+  '茨木市': '#CCCC00',
+  '堺市': '#008000',
+  '高石市': '#FFA500',
+  '大阪狭山市': '#800080',
+  '熊取町': '#FFC0CB',
+  '池田市': '#A52A2A',
+  '東大阪市': '#808080',
+  '吹田市': '#ADD8E6',
+  '和泉市': '#00FF00',
+  '高槻市': '#40E0D0',
+  '河内長野市': '#FF00FF',
+  '大阪市': '#7D7D7D',
+  '富田林市': '#C0C0C0',
+  '河南町': '#FFD700',
+  '太子町': '#000080',
+  '千早赤阪村': '#DC143C',
+  'default': '#0095D9',
+};

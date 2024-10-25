@@ -1,22 +1,20 @@
-import { Status, Response } from './data';
+import { Status, Response } from './interface';
 
 export const mockError: Status = {
   status: 'error',
+  regions: [],
   genre: 'バレーボール',
   msg: 'test'
 };
 
 export const mockInProgress: Status = {
   status: 'in-progress',
+  regions: ['大阪市', '高石市'],
   genre: 'バレーボール',
   msg: 'test'
 };
 
 export const mockData: Response = {
-  '大阪府': {},
-  '豊中市': {},
-  '茨木市': {},
-  '堺市': {},
   '高石市': {
     'バレーボール': {
       '高石市立総合体育館': {
@@ -47,17 +45,4 @@ export const mockData: Response = {
       }
     }
   },
-  '大阪狭山市': {},
-  '熊取町': {},
-  '池田市': {},
-  '東大阪市': {},
-  '吹田市': {},
-  '和泉市': {},
-  '高槻市': {},
-  '河内長野市': {},
-  '大阪市': {},
-  '富田林市': {},
-  '河南町': {},
-  '太子町': {},
-  '千早赤阪村':{},
 };

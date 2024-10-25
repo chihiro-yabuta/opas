@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import { Status } from '../store/data';
+import { Status } from '../store/interface';
 import { mockError, mockInProgress } from '../store/mock';
 
 export function Notice(props: { status: Status }) {
@@ -9,7 +9,7 @@ export function Notice(props: { status: Status }) {
   switch (props.status.status) {
     case 'in-progress':
       color = '#10B98180';
-      noticeLine1 = `「${props.status.genre}」の更新中です`;
+      noticeLine1 = `「${props.status.regions.join('」「')}」「${props.status.genre}」の更新中です`;
       noticeLine2 = 'ページを更新せず、3分ほどお待ちください';
       break;
     case 'error':

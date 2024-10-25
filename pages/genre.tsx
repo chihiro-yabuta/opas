@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 import { Provider, useDispatch } from 'react-redux';
 import { IoReload } from 'react-icons/io5';
 import { store, slice } from '../store';
-import { genres } from  '../store/data';
+import { genreLists } from  '../store/data';
 
 export function Genre() {
   const dispatch = useDispatch();
   const ref = useRef(null);
-  const [genre, setGenre] = useState(genres[0][0]);
+  const [genre, setGenre] = useState(genreLists[0][0]);
   const [isVisible, setIsVisible] = useState(false);
   const [updt, setUpdt] = useState(1);
   const [rotate, setRotate] = useState(0);
@@ -46,7 +46,7 @@ export function Genre() {
       animate={{ height: isVisible ? 'auto' : 0, opacity: Number(isVisible) }}
       style={{ overflow: 'hidden' }}
     >
-      {genres.map((gl, i) => <div
+      {genreLists.map((gl, i) => <div
         key={i}
         style={{ display: 'flex', justifyContent: 'center' }}
       >
