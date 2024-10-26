@@ -374,5 +374,4 @@ export const regionColorMap = {
   '河南町': '#FFD700',
   '太子町': '#000080',
   '千早赤阪村': '#DC143C',
-  'default': '#0095D9',
 };

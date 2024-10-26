@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ status: 'error', key: key, msg: 'stuck' });
     }
   } else {
-    if (updt) {
+    if (updt === 'updt') {
       const time = new Date().getTime().toString();
       await cli.set('opas', JSON.stringify({ status: 'in-progress', key: fullKey, msg: time }));
       crawl(cli, reqRegions, reqGenre, key);

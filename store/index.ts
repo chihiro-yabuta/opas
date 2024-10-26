@@ -3,6 +3,7 @@ import { regionMap } from './data';
 
 const initialState = {
   regions: null as typeof regionMap,
+  detailRegions: null as typeof regionMap,
   genre: '',
   updt: null as number,
 };
@@ -13,6 +14,9 @@ export const slice = createSlice({
   reducers: {
     sendRegions(state, action: PayloadAction<typeof regionMap>) {
       state.regions = action.payload;
+    },
+    sendDetailRegions(state, action: PayloadAction<typeof regionMap>) {
+      state.detailRegions = action.payload;
     },
     sendGenre(state, action: PayloadAction<string>) {
       state.genre = action.payload;
