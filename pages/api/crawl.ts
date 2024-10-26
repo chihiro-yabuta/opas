@@ -1,18 +1,18 @@
 import { RedisClientType } from 'redis';
 import axios, { AxiosResponse } from 'axios';
 import { JSDOM } from 'jsdom';
-import { base, genreSlct, login, agent, Response, Org, regions, genres } from './data';
+import { base, genreSlct, login, agent, Response, Org, regionNameMap, regionIdMap, genreNameMap } from './data';
 
-export async function crawl(cli: RedisClientType, genre: string, key: string) {
+export async function crawl(cli: RedisClientType, regionNames: string[], genreName: string, key: string) {
   try {
     let orgMap: Org = {};
     let resObj: Response = {};
-    const subGenres = await selectP0(genre);
+    const subGenres = await selectP0(genreName);
     await Promise.all(subGenres.map(async (subGenre) => {
-      await enter(orgMap, encodeURIComponent(genre), encodeURIComponent(subGenre));
+      await enter(orgMap, regionNames, encodeURIComponent(genreName), encodeURIComponent(subGenre));
     }));
     await Promise.all(Object.entries(orgMap).map(async ([regionId, subOrgs]) => {
-      resObj[regions[regionId][1]] ||= {};
+      resObj[regionIdMap[regionId][1]] ||= {};
       const subGenreCnt: { [id: string]: number } = {};
       const subGenreMap: { [id: string]: string } = {};
       Object.values(subOrgs).map(e => e.subGenres.map((e) => {
@@ -31,7 +31,7 @@ export async function crawl(cli: RedisClientType, genre: string, key: string) {
         subGenreMap[`&shubetsuCd=${id}`] += `&checkMeisaiUniqKey=${e.id}`;
       });
       await Promise.all(Object.entries(subGenreMap).map(async ([subGenreId, subOrgKey]) => {
-        await calendar(resObj[regions[regionId][1]], orgMap[regionId], regionId, subGenreId, subOrgKey);
+        await calendar(resObj[regionIdMap[regionId][1]], orgMap[regionId], regionId, subGenreId, subOrgKey);
       }));
     }));
     await cli.set('opas', JSON.stringify({ status: 'success', key: key, msg: 'done' }));
@@ -51,22 +51,22 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
   const maxDate = new Date(firstRowDate);
   maxDate.setMonth(maxDate.getMonth() + 2);
 
-  const g = Object.entries(genres).reduce((acc, [k, v]) => v.charAt(0) === subGenreId.split('=')[1].charAt(0) ? k : acc, '');
+  const g = Object.entries(genreNameMap).reduce((acc, [k, v]) => v.charAt(0) === subGenreId.split('=')[1].charAt(0) ? k : acc, '');
   while (1) {
     date.setDate(date.getDate() + 7);
     try {
       const res = await axios.post(
-        `${base}${regions[regionId][0]}/yoyaku/CalendarStatus${slct}.cgi`,
+        `${base}${regionIdMap[regionId][0]}/yoyaku/CalendarStatus${slct}.cgi`,
         `action=Setup&optYear=${date.getFullYear()}&optMonth=${padding(date.getMonth()+1)}&optDay=${padding(date.getDate())}`,
         { headers: { Cookie: `${sessionId};${webId}` }, httpsAgent: agent, responseType: 'arraybuffer' }
       );
       if (new JSDOM(res.data).window.document.getElementById('formMain').getAttribute('name').includes('error')) {
-        console.log('continue', g, regions[regionId][1], date);
+        console.log('continue', g, regionIdMap[regionId][1], date);
         await new Promise(resolve => setTimeout(resolve, 3000));
         [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
         date.setDate(date.getDate() - 7);
       } else {
-        console.log('success', g, regions[regionId][1], date);
+        console.log('success', g, regionIdMap[regionId][1], date);
         firstRowDate = await scrape(resObj, subOrgMap, res.data, firstRowDate);
         if (!firstRowDate) break;
         const d = new Date(firstRowDate);
@@ -74,7 +74,7 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
         if (d > maxDate) break;
       }
     } catch {
-      console.log('error', g, regions[regionId][1], date);
+      console.log('error', g, regionIdMap[regionId][1], date);
       await new Promise(resolve => setTimeout(resolve, 10000));
       [, sessionId, webId] = await initCalendar(regionId, subGenreId, subGenreKey);
       date.setDate(date.getDate() - 7);
@@ -83,7 +83,7 @@ async function calendar(resObj: Response[string], subOrgMap: Org[string], region
 }
 
 async function initCalendar(regionId: string, subGenreId: string, subGenreKey: string) {
-  const url = `${base}${regions[regionId][0]}/${login}?action=FROM_PORTAL_TO_CALENDAR`;
+  const url = `${base}${regionIdMap[regionId][0]}/${login}?action=FROM_PORTAL_TO_CALENDAR`;
   const init = await axios.get(
     `${url}${subGenreKey}${subGenreId}`, { httpsAgent: agent, responseType: 'arraybuffer' }
   );
@@ -134,10 +134,10 @@ async function scrape(resObj: Response[string], subOrgMap: Org[string], data: Ar
   return firstRowDate;
 }
 
-async function selectP0(genre: string) {
+async function selectP0(genreName: string) {
   const res = new TextDecoder('shift-JIS').decode(new Uint8Array((await axios.post(
     `${base}${genreSlct}`,
-    `action=SelectP0&optDaiGenre=${genres[genre]}_${encodeURIComponent(genre)}`,
+    `action=SelectP0&optDaiGenre=${genreNameMap[genreName]}_${encodeURIComponent(genreName)}`,
     { httpsAgent: agent, responseType: 'arraybuffer' }
   )).data));
   const document = (new JSDOM(res)).window.document;
@@ -147,11 +147,12 @@ async function selectP0(genre: string) {
   ;
 }
 
-async function enter(orgMap: Org, genre: string, subGenre: string) {
-  const region = Object.keys(regions).reduce((acc, curr) => acc + `&checkChidanUniqKey=${curr}`, '');
+async function enter(orgMap: Org, regionNames: string[], genreName: string, subGenre: string) {
+  regionNames.map(e => `&checkChidanUniqKey=${regionNameMap[e]}`)
+  const region = regionNames.reduce((acc, curr) => acc + `&checkChidanUniqKey=${regionNameMap[curr]}`, '');
   const res = new TextDecoder('shift-JIS').decode(new Uint8Array((await axios.post(
     `${base}${genreSlct}`,
-    `action=Enter&optDaiGenre=${genres[genre]}_${genre}&optSyoGenre=${subGenre}${region}`,
+    `action=Enter&optDaiGenre=${genreNameMap[genreName]}_${genreName}&optSyoGenre=${subGenre}${region}`,
     { httpsAgent: agent, responseType: 'arraybuffer' }
   )).data));
   const document = (new JSDOM(res)).window.document;
