@@ -1,9 +1,8 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { regionMap } from './data';
 
 const initialState = {
-  regions: null as typeof regionMap,
-  detailRegions: null as typeof regionMap,
+  regions: null as { [region: string]: boolean },
+  detailRegions: null as { [region: string]: boolean },
   genre: '',
   updt: null as number,
 };
@@ -12,10 +11,10 @@ export const slice = createSlice({
   name: 'slice',
   initialState,
   reducers: {
-    sendRegions(state, action: PayloadAction<typeof regionMap>) {
+    sendRegions(state, action: PayloadAction<{ [region: string]: boolean }>) {
       state.regions = action.payload;
     },
-    sendDetailRegions(state, action: PayloadAction<typeof regionMap>) {
+    sendDetailRegions(state, action: PayloadAction<{ [region: string]: boolean }>) {
       state.detailRegions = action.payload;
     },
     sendGenre(state, action: PayloadAction<string>) {

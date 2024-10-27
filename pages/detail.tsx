@@ -6,27 +6,35 @@ import { Response, Range, Header } from '../store/interface';
 import { re, getTimes, getSet } from '../store/common';
 import { regionColorMap } from '../store/data';
 import { mockData } from '../store/mock';
+import { Region } from './region';
 
 export function Detail(props: { data: Response, date: string, onClick: React.Dispatch<React.SetStateAction<string>> }) {
   const range: Range = {};
-  const regionLen = Object.keys(props.data).length;
+  const regionNameMap: { [region: string]: boolean } = {};
+  const detailRegions = useSelector((state: RootState) => state.detailRegions) || { '高石市': true, '大阪市': true };
+  const regionLen = Object.values(detailRegions).reduce((acc, curr) => acc + Number(curr), 0);
   const subGenreNameList: string[][] = Array.from({ length: regionLen }, () => []);
 
-  Object.entries(props.data).map(([regionName, subGenre], i) => {
-    Object.entries(subGenre).map(([subGenreName, org]) => {
-      subGenreNameList[i].push(subGenreName);
-      Object.entries(org).map(([orgName, subOrg]) => {
-        Object.entries(subOrg).map(([subOrgName, times]) => {
-          const name = `${subOrgName}:sep:${orgName}:sep:${regionName}`;
-          times.map(s => {
-            range[name] ||= [[]];
-            const [jaDate, time] = s.split(' | ');
-            range[name][0] = props.date === re(jaDate) ? getTimes(range[name][0], time) : range[name][0];
+  let cnt = 0;
+  Object.entries(props.data).map(([regionName, subGenre]) => {
+    regionNameMap[regionName] = true;
+    if (detailRegions[regionName]) {
+      Object.entries(subGenre).map(([subGenreName, org]) => {
+        subGenreNameList[cnt].push(subGenreName);
+        Object.entries(org).map(([orgName, subOrg]) => {
+          Object.entries(subOrg).map(([subOrgName, times]) => {
+            const name = `${subOrgName}:sep:${orgName}:sep:${regionName}`;
+            times.map(s => {
+              range[name] ||= [[]];
+              const [jaDate, time] = s.split(' | ');
+              range[name][0] = props.date === re(jaDate) ? getTimes(range[name][0], time) : range[name][0];
+            });
+            !range[name][0].length && delete range[name];
           });
-          !range[name][0].length && delete range[name];
         });
       });
-    });
+      cnt++;
+    }
   });
 
   const genre = useSelector((state: RootState) => state.genre) || 'バレーボール';
@@ -45,7 +53,9 @@ export function Detail(props: { data: Response, date: string, onClick: React.Dis
       width: '100%', height: '100%', backgroundColor: '#00000080'
     }}
     onClick={() => props.onClick('')}
-  ><table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#ffffff' }}>
+  >
+    <div onClick={e => e.stopPropagation()}><Region region={regionNameMap} isDetail /></div>
+    <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#ffffff' }}>
       <tbody>
         <HeaderTable header={[{ title: title, colSpan: Object.keys(range).length }]} childKey={3} />
         <HeaderTable header={regionNames} childKey={4} />

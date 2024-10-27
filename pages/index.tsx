@@ -18,7 +18,7 @@ function App() {
 
   const updateData = (res: any, reqGenreName: string, tgtGenreName: string) => {
     res.status ? setStatus({
-      regions: [...res.key.matchAll(/region=([^&]+)/g).map(e => e[1])],
+      regions: res.key.match(/region=([^&]+)/g).map(e => e.split('=')[1]),
       genre: res.key.match(/genre=([^&]+)/)[1],
       status: res.status,
       msg: res.msg,

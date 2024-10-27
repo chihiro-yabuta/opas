@@ -19,8 +19,8 @@ export function Region(props: { region: { [region: string]: boolean }, isDetail?
     {Object.keys(props.region).map((r, i) => <motion.td
       key={i}
       initial={{ backgroundColor: '#ffffff' }}
-      whileHover={{ backgroundColor: `${regions[r] ? '#84a2d4' : '#e0ffff'}` }}
-      animate={{ backgroundColor: `${regions[r] ? '#84a2d4' : '#ffffff'}` }}
+      whileHover={{ backgroundColor: `${regions[r] ? '#e0ffff' : '#f4ffff'}` }}
+      animate={{ backgroundColor: `${regions[r] ? '#e0ffff' : '#ffffff'}` }}
       style={{
         textAlign: 'center', color: regionColorMap[r],
         border: 'solid 2px #84a2d4', fontSize: '2vw', padding: '20px 0',
