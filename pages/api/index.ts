@@ -11,9 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const prod = process.env.NODE_ENV === 'production';
 
   const cli: RedisClientType = createClient(prod && {
-    url: 'rediss://' + process.env.host,
-    password: process.env.pswd,
-    socket: { tls: true, minVersion: 'TLSv1.2' }
+    url: process.env.host,
   });
   await cli.connect();
 
