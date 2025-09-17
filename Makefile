@@ -13,5 +13,5 @@ r:
 # sudo dnf module install -y nodejs:22
 # sudo setsebool -P httpd_can_network_connect on
 # sudo systemctl enable --now nginx
-# cp nginx/app.conf /etc/nginx/conf.d/app.conf
+# cp nginx.conf /etc/nginx/conf.d/app.conf
 # sudo nginx -t && sudo systemctl reload nginx
